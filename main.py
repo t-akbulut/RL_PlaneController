@@ -1,7 +1,9 @@
+from utils import wrap_180
 from pymavlink import mavutil
 import time
 from Plane import *
 from dronekit import connect, VehicleMode, LocationGlobal, LocationGlobalRelative
+from utils import *
 
 import threading
 #the_connection = mavutil.mavlink_connection('udpin:localhost:14550')
@@ -45,18 +47,30 @@ def arm_and_takeoff(aTargetAltitude):
 
 
 def roll_cmd(roll):
-    vehicle.channels.overrides['1'] = 1500 + roll / 45* 500;
+    vehicle.channels.overrides['1'] = int(1500 + roll / 50 * 500)
 def pitch_cmd(pitch):
-    vehicle.channels.overrides['1'] = 1500 + pitch / 45* 500;
+    vehicle.channels.overrides['1'] = 1500 + pitch / 50* 500
 def throttle_cmd(throttle):
-    vehicle.channels.overrides['1'] = 1000 + throttle / 100* 500;
+    vehicle.channels.overrides['1'] = 1000 + throttle / 100* 500
+
+def  navigation():
+    vh= vehicle.heading
+    ph = math.atan2(vehicle.location.local_frame.east*-1,vehicle.location.local_frame.north*-1) * 180 / math.pi
+    heading_error = wrap_180(vh - ph)
+   
+    print(heading_error)
+    roll_command = constrain(heading_error,-10,10)
+
+    roll_cmd(roll_command*-1)
     
 
 def handle_logging():
+    yon = 1
     while True:
-        print(vehicle.velocity)
+        
+        #roll_cmd(yon * 10)
+        navigation()
         time.sleep(1)
-
 
 if __name__ == "__main__":
     #arm_and_takeoff(5)
