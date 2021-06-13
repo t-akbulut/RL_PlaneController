@@ -15,13 +15,14 @@ class Dqn:
         self.memory = deque(maxlen=2000)
         self.gamma = 0.95    # discount rate
         self.epsilon = 1.0  # exploration rate
-        self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon_min = 0
+        self.epsilon_decay = 0.8
         self.learning_rate = 0.0001
         self.model = self._build_model()
 
         if os.path.isfile("weights.h5"):
             self.model.load_weights("weights.h5")
+            
 
     def _build_model(self):
         # Neural Net for Deep-Q learning Model
@@ -31,14 +32,15 @@ class Dqn:
         model.add(Dense(self.action_size, activation='linear'))
         model.compile(loss='mse',
                       optimizer=Adam(lr=self.learning_rate))
+        print(model.summary())
         return model
 
     def memorize(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
     def act(self, state):
-        #if np.random.rand() <= self.epsilon:
-            #return random.randrange(self.action_size)
+        if np.random.rand() <= self.epsilon:
+            return random.randrange(self.action_size)
         act_values = self.model.predict(state)
         return np.argmax(act_values[0])  # returns action
 
